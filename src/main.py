@@ -1,6 +1,4 @@
 
-Copiar
-
 """
 Sistema de Monitoramento e Nutricao de Solo
 Monitora umidade, pH e nivel de NPK do solo.
