@@ -31,4 +31,4 @@ jobs:
       with:
         token: ${{ secrets.WORKWI_API_KEY }}
         path: /
-        expect_text: 'Monitoramento do solo'
+        expect_text: 'Monitoramento e Nutricao de Solo'
