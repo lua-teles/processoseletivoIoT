@@ -12,7 +12,7 @@
 O projeto simula um sistema embarcado completo de **monitoramento de solo** com ESP32 e MicroPython.
  
 - **Objetivo:** monitorar umidade, pH e nível de NPK do solo, acionar irrigação automática e alertar sobre deficiências de nutrientes
-- **O que faz:** lê 3 sensores analógicos continuamente; aciona irrigação quando solo está seco; emite alertas sonoros e visuais quando pH ou NPK estão fora do ideal; encerra após 10 ciclos para compatibilidade com CI
+- **O que faz:** lê 3 sensores analógicos continuamente; aciona irrigação quando solo está seco; emite alertas sonoros e visuais quando pH ou NPK estão fora do ideal
 - **Interação:** o usuário gira os potenciômetros no Wokwi para simular variações de umidade, acidez e nutrientes do solo
 ---
  
@@ -28,7 +28,7 @@ Inicializa periféricos (ADC x3, LEDs x3, Buzzer)
                │
                ▼
     ┌─────────────────────────────────┐
-    │  Loop de MAX_CICLOS=10 leituras │
+    │     Loop infinito (1s)         │
     │                                 │
     │  1. Lê 3 sensores (ADC)         │
     │  2. Calcula umidade %           │
@@ -38,11 +38,10 @@ Inicializa periféricos (ADC x3, LEDs x3, Buzzer)
     │  6. Verifica alertas nutrientes │
     │  7. Atualiza LEDs               │
     │  8. Loga no serial              │
-    │  9. Aguarda 1 segundo           │
+    │  9. Aguarda 1 segundo          │
     └─────────────────────────────────┘
                │
                ▼
-     Encerra simulação (CI safe)
 ```
  
 ### Máquina de estados de umidade (com histerese)
@@ -104,8 +103,7 @@ NPK > 66%  → EXCESSO → reduzir adubação
 **Histerese nos limiares de umidade**
 Dois limiares distintos (`UMIDADE_SECO = 2800` e `UMIDADE_UMIDO = 1800`) evitam oscilações quando o sensor fica na fronteira entre estados.
  
-**Loop finito com MAX_CICLOS**
-O programa executa exatamente 5 ciclos de leitura (0.5 segundo cada) e encerra limpo. Isso evita timeout no Wokwi CLI durante o GitHub Actions, que aguarda o encerramento do processo para validar o `expect_text`.
+ 
  
 **Alertas sonoros diferenciados**
 O buzzer usa frequências e padrões distintos: 2 bips agudos (800Hz) para irrigação e 2 bips graves (500/700Hz) para deficiência de nutrientes, permitindo identificar o tipo de alerta sem olhar para a tela.
@@ -129,7 +127,7 @@ Apenas bibliotecas padrão do MicroPython (`machine`, `time`) — sem dependênc
 - ✅ LEDs verde/amarelo/vermelho indicando estado de prioridade
 - ✅ Buzzer com sons distintos para cada tipo de alerta
 - ✅ Log completo no serial com umidade, pH, NPK e estado atual
-- ✅ Programa encerra após 5 ciclos (2.5s) — sem timeout no GitHub Actions
+- ✅ Loop contínuo de monitoramento — leitura a cada 1 segundo
 - ✅ Texto de boot validado pelo Wokwi CLI (`expect_text: 'Monitoramento e Nutricao de Solo'`)
 ---
  
@@ -137,16 +135,16 @@ Apenas bibliotecas padrão do MicroPython (`machine`, `time`) — sem dependênc
  
 **Limitações atuais:**
 - Os potenciômetros são aproximações dos sensores reais — sensores físicos de pH e EC têm comportamento e calibração distintos
-- O loop finito (5 ciclos com intervalo de 500ms) é adequado para CI mas em produção real o sistema rodaria continuamente
-
 **Melhorias com mais tempo:**
 - Display OLED mostrando painel completo de saúde do solo em tempo real
 - Registro de histórico com timestamps para análise de tendências
 - Comunicação MQTT para envio dos dados para nuvem
 - Tempo mínimo de irrigação para evitar subciclos muito curtos
-
 **Aprendizados:**
 - Uso de múltiplos ADCs simultâneos no ESP32 com MicroPython
+- Mapeamento de faixas de ADC para grandezas físicas (pH, %)
+- Importância de alertas diferenciados (visuais + sonoros) em sistemas embarcados
+- Configuração de pipeline CI/CD com Docker + Wokwi CLI + GitHub Actions Python
 - Mapeamento de faixas de ADC para grandezas físicas (pH, %)
 - Importância de alertas diferenciados (visuais + sonoros) em sistemas embarcados
 - Configuração de pipeline CI/CD com Docker + Wokwi CLI + GitHub Actions
