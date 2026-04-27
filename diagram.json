@@ -3,147 +3,47 @@
   "author": "Flavian-FIT",
   "editor": "wokwi",
   "parts": [
-    {
-      "type": "board-esp32-devkit-c-v4",
-      "id": "esp",
-      "top": 0,
-      "left": 0,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led_verde",
-      "top": -80,
-      "left": 240,
-      "attrs": {
-        "color": "green"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led_vermelho",
-      "top": -80,
-      "left": 300,
-      "attrs": {
-        "color": "red"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r1",
-      "top": -40,
-      "left": 240,
-      "attrs": {
-        "value": "220"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r2",
-      "top": -40,
-      "left": 300,
-      "attrs": {
-        "value": "220"
-      }
-    },
-    {
-      "type": "wokwi-buzzer",
-      "id": "buzzer",
-      "top": -80,
-      "left": 380,
-      "attrs": {
-        "volume": "0.5"
-      }
-    },
-    {
-      "type": "wokwi-potentiometer",
-      "id": "pot1",
-      "top": 140,
-      "left": -140,
-      "attrs": {
-        "label": "Umidade Solo",
-        "value": "0.2"
-      }
-    }
+    { "type": "board-esp32-devkit-c-v4", "id": "esp",         "top": 0,    "left": 0,    "attrs": {} },
+    { "type": "wokwi-potentiometer",     "id": "pot_umidade", "top": 160,  "left": -180, "attrs": { "label": "Umidade Solo", "value": "0.2" } },
+    { "type": "wokwi-potentiometer",     "id": "pot_ph",      "top": 280,  "left": -180, "attrs": { "label": "pH Solo",      "value": "0.5" } },
+    { "type": "wokwi-potentiometer",     "id": "pot_npk",     "top": 390,  "left": -180, "attrs": { "label": "NPK Solo",     "value": "0.5" } },
+    { "type": "wokwi-led",               "id": "led_verde",   "top": -90,  "left": 260,  "attrs": { "color": "green"  } },
+    { "type": "wokwi-led",               "id": "led_amarelo", "top": -90,  "left": 310,  "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led",               "id": "led_verm",    "top": -90,  "left": 360,  "attrs": { "color": "red"    } },
+    { "type": "wokwi-resistor",          "id": "r1",          "top": -50,  "left": 260,  "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor",          "id": "r2",          "top": -50,  "left": 310,  "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor",          "id": "r3",          "top": -50,  "left": 360,  "attrs": { "value": "220" } },
+    { "type": "wokwi-buzzer",            "id": "buzzer",      "top": -90,  "left": 430,  "attrs": { "volume": "0.5" } }
   ],
   "connections": [
-    [
-      "esp:TX",
-      "$serialMonitor:RX",
-      "",
-      []
-    ],
-    [
-      "esp:RX",
-      "$serialMonitor:TX",
-      "",
-      []
-    ],
-    [
-      "esp:GND.1",
-      "led_verde:C",
-      "black",
-      []
-    ],
-    [
-      "esp:GND.1",
-      "led_vermelho:C",
-      "black",
-      []
-    ],
-    [
-      "esp:IO25",
-      "r1:1",
-      "green",
-      []
-    ],
-    [
-      "r1:2",
-      "led_verde:A",
-      "green",
-      []
-    ],
-    [
-      "esp:IO26",
-      "r2:1",
-      "red",
-      []
-    ],
-    [
-      "r2:2",
-      "led_vermelho:A",
-      "red",
-      []
-    ],
-    [
-      "esp:IO27",
-      "buzzer:1",
-      "orange",
-      []
-    ],
-    [
-      "esp:GND.1",
-      "buzzer:2",
-      "black",
-      []
-    ],
-    [
-      "esp:IO34",
-      "pot1:SIG",
-      "yellow",
-      []
-    ],
-    [
-      "esp:3V3",
-      "pot1:VCC",
-      "red",
-      []
-    ],
-    [
-      "esp:GND.1",
-      "pot1:GND",
-      "black",
-      []
-    ]
+    [ "esp:TX",    "$serialMonitor:RX", "", [] ],
+    [ "esp:RX",    "$serialMonitor:TX", "", [] ],
+
+    [ "esp:IO25",  "r1:1",              "green",  [] ],
+    [ "r1:2",      "led_verde:A",       "green",  [] ],
+    [ "esp:GND.1", "led_verde:C",       "black",  [] ],
+
+    [ "esp:IO26",  "r2:1",              "yellow", [] ],
+    [ "r2:2",      "led_amarelo:A",     "yellow", [] ],
+    [ "esp:GND.1", "led_amarelo:C",     "black",  [] ],
+
+    [ "esp:IO27",  "r3:1",              "red",    [] ],
+    [ "r3:2",      "led_verm:A",        "red",    [] ],
+    [ "esp:GND.1", "led_verm:C",        "black",  [] ],
+
+    [ "esp:IO33",  "buzzer:1",          "orange", [] ],
+    [ "esp:GND.1", "buzzer:2",          "black",  [] ],
+
+    [ "esp:IO34",  "pot_umidade:SIG",   "blue",   [] ],
+    [ "esp:3V3",   "pot_umidade:VCC",   "red",    [] ],
+    [ "esp:GND.1", "pot_umidade:GND",   "black",  [] ],
+
+    [ "esp:IO35",  "pot_ph:SIG",        "purple", [] ],
+    [ "esp:3V3",   "pot_ph:VCC",        "red",    [] ],
+    [ "esp:GND.1", "pot_ph:GND",        "black",  [] ],
+
+    [ "esp:IO32",  "pot_npk:SIG",       "cyan",   [] ],
+    [ "esp:3V3",   "pot_npk:VCC",       "red",    [] ],
+    [ "esp:GND.1", "pot_npk:GND",       "black",  [] ]
   ]
 }
