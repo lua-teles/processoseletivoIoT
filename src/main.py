@@ -1,16 +1,22 @@
+
+Copiar
+
 """
 Sistema de Monitoramento e Nutricao de Solo
 Monitora umidade, pH e nivel de NPK do solo.
 Aciona irrigacao e emite alertas de nutrientes automaticamente.
  
 Hardware simulado (ESP32):
-- Potenciometro 1 (IO34) -> Sensor de umidade
-- Potenciometro 2 (IO35) -> Sensor de pH
-- Potenciometro 3 (IO32) -> Sensor de NPK
-- LED Verde  (IO25) -> Solo saudavel
-- LED Amarelo (IO26) -> Alerta de nutriente
-- LED Vermelho (IO27) -> Irrigando
-- Buzzer (IO33)       -> Alertas sonoros
+- Potenciometro 1 (34) -> Sensor de umidade
+- Potenciometro 2 (35) -> Sensor de pH
+- Potenciometro 3 (32) -> Sensor de NPK
+- LED Verde  (25) -> Solo saudavel
+- LED Amarelo (26) -> Alerta de nutriente
+- LED Vermelho (27) -> Irrigando
+- Buzzer (33)       -> Alertas sonoros
+ 
+Modo CI: executa MAX_CICLOS leituras e encerra,
+permitindo validacao automatica via Wokwi CLI.
 """
  
 from machine import Pin, ADC, PWM
@@ -25,24 +31,27 @@ LED_AMARELO_PIN  = 26
 LED_VERMELHO_PIN = 27
 BUZZER_PIN       = 33
  
+# ── Ciclos de execucao (evita timeout no CI) ────────────────────
+MAX_CICLOS = 10
+ 
 # ── Limiares de umidade ─────────────────────────────────────────
-UMIDADE_SECO     = 2800
-UMIDADE_UMIDO    = 1800
+UMIDADE_SECO  = 2800
+UMIDADE_UMIDO = 1800
  
-# ── Limiares de pH (ADC 0-4095 mapeado para pH 0-14) ───────────
-PH_ACIDO_MAX     = 1170   # pH < 4.0 -> muito acido
-PH_IDEAL_MIN     = 1750   # pH 6.0
-PH_IDEAL_MAX     = 2330   # pH 8.0
-PH_ALCALINO_MIN  = 2916   # pH > 10.0 -> muito alcalino
+# ── Limiares de pH ──────────────────────────────────────────────
+PH_ACIDO_MAX    = 1170
+PH_IDEAL_MIN    = 1750
+PH_IDEAL_MAX    = 2330
+PH_ALCALINO_MIN = 2916
  
-# ── Limiares de NPK (ADC 0-4095) ───────────────────────────────
-NPK_BAIXO        = 1365   # abaixo de 33% -> deficiente
-NPK_ALTO         = 2730   # acima de 66%  -> excesso
+# ── Limiares de NPK ─────────────────────────────────────────────
+NPK_BAIXO = 1365
+NPK_ALTO  = 2730
  
-# ── Estados do solo ─────────────────────────────────────────────
-UMIDO    = "UMIDO"
-SECO     = "SECO"
-REGANDO  = "REGANDO"
+# ── Estados ─────────────────────────────────────────────────────
+UMIDO   = "UMIDO"
+SECO    = "SECO"
+REGANDO = "REGANDO"
  
 # ── Inicializacao ───────────────────────────────────────────────
 sensor_umidade = ADC(Pin(SOLO_UMIDADE_PIN))
@@ -84,14 +93,13 @@ def umidade_pct(adc):
     return max(0, min(100, 100 - int((adc / 4095) * 100)))
  
 def adc_para_ph(adc):
-    """Mapeia ADC 0-4095 para pH 0.0-14.0"""
     return round((adc / 4095) * 14.0, 1)
  
 def npk_pct(adc):
     return max(0, min(100, int((adc / 4095) * 100)))
  
  
-# ── Diagnostico de pH ───────────────────────────────────────────
+# ── Diagnosticos ────────────────────────────────────────────────
 def diagnostico_ph(adc):
     ph = adc_para_ph(adc)
     if adc < PH_ACIDO_MAX:
@@ -105,20 +113,18 @@ def diagnostico_ph(adc):
     else:
         return ph, "CRITICO", "Solo muito alcalino! Aplicar enxofre urgente."
  
- 
-# ── Diagnostico de NPK ──────────────────────────────────────────
 def diagnostico_npk(adc):
     pct = npk_pct(adc)
     if adc < NPK_BAIXO:
-        return pct, "BAIXO",  "Deficiencia de NPK! Aplicar adubo completo."
+        return pct, "BAIXO",   "Deficiencia de NPK! Aplicar adubo completo."
     elif adc > NPK_ALTO:
-        return pct, "EXCESSO","Excesso de NPK! Reduzir adubacao."
+        return pct, "EXCESSO", "Excesso de NPK! Reduzir adubacao."
     else:
-        return pct, "IDEAL",  "Nivel de nutrientes adequado."
+        return pct, "IDEAL",   "Nivel de nutrientes adequado."
  
  
-# ── Maquina de estados de umidade ───────────────────────────────
-def proximo_estado_umidade(adc, atual):
+# ── Maquina de estados ──────────────────────────────────────────
+def proximo_estado(adc, atual):
     if atual == UMIDO and adc > UMIDADE_SECO:
         return SECO
     if atual in (SECO, REGANDO):
@@ -128,13 +134,12 @@ def proximo_estado_umidade(adc, atual):
     return atual
  
  
-# ── Atualiza LEDs ───────────────────────────────────────────────
-def atualizar_leds(estado_umidade, alerta_nutriente):
+# ── LEDs ────────────────────────────────────────────────────────
+def atualizar_leds(estado, alerta_nutriente):
     led_verde.off()
     led_amarelo.off()
     led_vermelho.off()
- 
-    if estado_umidade in (SECO, REGANDO):
+    if estado in (SECO, REGANDO):
         led_vermelho.on()
     elif alerta_nutriente:
         led_amarelo.on()
@@ -148,7 +153,7 @@ print("  Monitoramento e Nutricao de Solo")
 print("  ESP32 + MicroPython | Wokwi")
 print("=" * 48)
 print("Sensores: Umidade | pH | NPK")
-print("Iniciando monitoramento...\n")
+print("Iniciando monitoramento...")
  
 beep(1000, 150)
 time.sleep_ms(80)
@@ -159,25 +164,21 @@ beep(1500, 150)
 estado_umidade = UMIDO
 ciclos         = 0
  
-# ── Loop principal ───────────────────────────────────────────────
-while True:
-    # Leituras
+# ── Loop principal (MAX_CICLOS para nao dar timeout no CI) ───────
+for ciclo in range(MAX_CICLOS):
     adc_umid = sensor_umidade.read()
     adc_ph   = sensor_ph.read()
     adc_npk  = sensor_npk.read()
  
-    # Calculos
-    umid_pct              = umidade_pct(adc_umid)
-    ph_val, ph_status, ph_msg   = diagnostico_ph(adc_ph)
+    umid_pct                     = umidade_pct(adc_umid)
+    ph_val, ph_status, ph_msg    = diagnostico_ph(adc_ph)
     npk_val, npk_status, npk_msg = diagnostico_npk(adc_npk)
  
-    # Estado de umidade
-    novo_estado = proximo_estado_umidade(adc_umid, estado_umidade)
+    novo_estado = proximo_estado(adc_umid, estado_umidade)
  
-    # Mudanca de estado de irrigacao
     if novo_estado != estado_umidade:
         if novo_estado == SECO:
-            print("\n[IRRIGACAO] Solo seco! Iniciando irrigacao...")
+            print("[IRRIGACAO] Solo seco! Iniciando irrigacao...")
             beep_irrigacao()
         elif novo_estado == REGANDO:
             ciclos += 1
@@ -186,10 +187,9 @@ while True:
             print("[IRRIGACAO] Regando... ciclo #{}".format(ciclos))
         elif novo_estado == UMIDO:
             silencio()
-            print("[IRRIGACAO] Solo umido. Irrigacao encerrada.\n")
+            print("[IRRIGACAO] Solo umido. Irrigacao encerrada.")
         estado_umidade = novo_estado
  
-    # Alertas de nutrientes
     alerta_nutriente = False
  
     if ph_status in ("ALERTA", "CRITICO"):
@@ -204,14 +204,17 @@ while True:
         if npk_status == "BAIXO":
             beep_nutriente()
  
-    # Atualiza LEDs
     atualizar_leds(estado_umidade, alerta_nutriente)
  
-    # Log geral
-    print(
-        "[Umidade: {:3d}%] [pH: {:4.1f} {}] [NPK: {:3d}% {}] [Estado: {}]".format(
-            umid_pct, ph_val, ph_status, npk_val, npk_status, estado_umidade
-        )
-    )
+    print("[Umidade: {:3d}%] [pH: {:4.1f} {}] [NPK: {:3d}% {}] [Estado: {}]".format(
+        umid_pct, ph_val, ph_status, npk_val, npk_status, estado_umidade
+    ))
  
     time.sleep(1)
+ 
+# ── Encerramento ────────────────────────────────────────────────
+silencio()
+led_verde.off()
+led_amarelo.off()
+led_vermelho.off()
+print("Simulacao encerrada. {} ciclos concluidos.".format(MAX_CICLOS))
