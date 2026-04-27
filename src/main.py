@@ -30,7 +30,7 @@ LED_VERMELHO_PIN = 27
 BUZZER_PIN       = 33
  
 # ── Ciclos de execucao (evita timeout no CI) ────────────────────
-MAX_CICLOS = 10
+MAX_CICLOS = 5
  
 # ── Limiares de umidade ─────────────────────────────────────────
 UMIDADE_SECO  = 2800
@@ -208,7 +208,7 @@ for ciclo in range(MAX_CICLOS):
         umid_pct, ph_val, ph_status, npk_val, npk_status, estado_umidade
     ))
  
-    time.sleep(1)
+    time.sleep_ms(500)
  
 # ── Encerramento ────────────────────────────────────────────────
 silencio()
