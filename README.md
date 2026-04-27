@@ -105,7 +105,7 @@ NPK > 66%  → EXCESSO → reduzir adubação
 Dois limiares distintos (`UMIDADE_SECO = 2800` e `UMIDADE_UMIDO = 1800`) evitam oscilações quando o sensor fica na fronteira entre estados.
  
 **Loop finito com MAX_CICLOS**
-O programa executa exatamente 10 ciclos de leitura (1 segundo cada) e encerra limpo. Isso evita timeout no Wokwi CLI durante o GitHub Actions, que aguarda o encerramento do processo para validar o `expect_text`.
+O programa executa exatamente 5 ciclos de leitura (0.5 segundo cada) e encerra limpo. Isso evita timeout no Wokwi CLI durante o GitHub Actions, que aguarda o encerramento do processo para validar o `expect_text`.
  
 **Alertas sonoros diferenciados**
 O buzzer usa frequências e padrões distintos: 2 bips agudos (800Hz) para irrigação e 2 bips graves (500/700Hz) para deficiência de nutrientes, permitindo identificar o tipo de alerta sem olhar para a tela.
@@ -129,7 +129,7 @@ Apenas bibliotecas padrão do MicroPython (`machine`, `time`) — sem dependênc
 - ✅ LEDs verde/amarelo/vermelho indicando estado de prioridade
 - ✅ Buzzer com sons distintos para cada tipo de alerta
 - ✅ Log completo no serial com umidade, pH, NPK e estado atual
-- ✅ Programa encerra após 10 ciclos — sem timeout no GitHub Actions
+- ✅ Programa encerra após 5 ciclos (2.5s) — sem timeout no GitHub Actions
 - ✅ Texto de boot validado pelo Wokwi CLI (`expect_text: 'Monitoramento e Nutricao de Solo'`)
 ---
  
@@ -137,7 +137,7 @@ Apenas bibliotecas padrão do MicroPython (`machine`, `time`) — sem dependênc
  
 **Limitações atuais:**
 - Os potenciômetros são aproximações dos sensores reais — sensores físicos de pH e EC têm comportamento e calibração distintos
-- O loop finito (10 ciclos) é adequado para CI mas em produção real o sistema rodaria continuamente
+- O loop finito (5 ciclos com intervalo de 500ms) é adequado para CI mas em produção real o sistema rodaria continuamente
 
 **Melhorias com mais tempo:**
 - Display OLED mostrando painel completo de saúde do solo em tempo real
@@ -145,9 +145,9 @@ Apenas bibliotecas padrão do MicroPython (`machine`, `time`) — sem dependênc
 - Comunicação MQTT para envio dos dados para nuvem
 - Tempo mínimo de irrigação para evitar subciclos muito curtos
 
-
 **Aprendizados:**
 - Uso de múltiplos ADCs simultâneos no ESP32 com MicroPython
 - Mapeamento de faixas de ADC para grandezas físicas (pH, %)
 - Importância de alertas diferenciados (visuais + sonoros) em sistemas embarcados
 - Configuração de pipeline CI/CD com Docker + Wokwi CLI + GitHub Actions
+ 
