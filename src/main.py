@@ -1,4 +1,3 @@
-
 """
 Sistema de Monitoramento e Nutricao de Solo
 Monitora umidade, pH e nivel de NPK do solo.
@@ -12,9 +11,6 @@ Hardware simulado (ESP32):
 - LED Amarelo (26) -> Alerta de nutriente
 - LED Vermelho (27) -> Irrigando
 - Buzzer (33)       -> Alertas sonoros
- 
-Modo CI: executa MAX_CICLOS leituras e encerra,
-permitindo validacao automatica via Wokwi CLI.
 """
  
 from machine import Pin, ADC, PWM
@@ -28,9 +24,6 @@ LED_VERDE_PIN    = 25
 LED_AMARELO_PIN  = 26
 LED_VERMELHO_PIN = 27
 BUZZER_PIN       = 33
- 
-# ── Ciclos de execucao (evita timeout no CI) ────────────────────
-MAX_CICLOS = 5
  
 # ── Limiares de umidade ─────────────────────────────────────────
 UMIDADE_SECO  = 2800
@@ -162,8 +155,8 @@ beep(1500, 150)
 estado_umidade = UMIDO
 ciclos         = 0
  
-# ── Loop principal (MAX_CICLOS para nao dar timeout no CI) ───────
-for ciclo in range(MAX_CICLOS):
+# ── Loop principal ───────────────────────────────────────────────
+while True:
     adc_umid = sensor_umidade.read()
     adc_ph   = sensor_ph.read()
     adc_npk  = sensor_npk.read()
@@ -208,11 +201,5 @@ for ciclo in range(MAX_CICLOS):
         umid_pct, ph_val, ph_status, npk_val, npk_status, estado_umidade
     ))
  
-    time.sleep_ms(500)
+    time.sleep(1)
  
-# ── Encerramento ────────────────────────────────────────────────
-silencio()
-led_verde.off()
-led_amarelo.off()
-led_vermelho.off()
-print("Simulacao encerrada. {} ciclos concluidos.".format(MAX_CICLOS))
